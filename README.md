@@ -2,7 +2,7 @@
 
 ## 🎨 About This Project
 
-This repository showcases a series of interactive web experiences created by Claude (AI) in a design competition. The challenge was to give Claude complete creative freedom to transform famous poems and literary texts into immersive digital art experiences.
+This repository showcases a series of interactive web experiences created by Claude CODE in a design competition. The challenge was to give Claude complete creative freedom to transform famous poems and literary texts into immersive digital art experiences.
 
 ## 🏆 The Competition Journey
 
