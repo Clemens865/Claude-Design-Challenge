@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auguries of Innocence - The Universe in Your Hands</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Canvas for particle universe */
+        #universeCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Main container */
+        .experience-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Opening scene */
+        .opening-scene {
+            text-align: center;
+            transition: all 2s ease;
+        }
+
+        .opening-scene.hidden {
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+        }
+
+        .sand-container {
+            display: inline-block;
+            cursor: pointer;
+            transition: all 0.5s ease;
+        }
+
+        .sand-container:hover {
+            transform: scale(1.1);
+        }
+
+        /* The grain of sand - simple and elegant */
+        .grain-sand {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sand-particle {
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b, #654321);
+            border-radius: 50%;
+            box-shadow: 0 0 40px #ffd700;
+            animation: sandFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes sandFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(1.2); }
+        }
+
+        .instruction {
+            margin-top: 30px;
+            font-size: 24px;
+            letter-spacing: 3px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* Poem display */
+        .poem-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            max-width: 900px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 2s ease;
+        }
+
+        .poem-display.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .verse {
+            font-size: 36px;
+            line-height: 1.8;
+            margin: 20px 0;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .verse.visible {
+            animation: verseAppear 1.5s ease forwards;
+        }
+
+        @keyframes verseAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Interactive elements */
+        .keyword {
+            color: #ffd700;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .keyword:hover {
+            transform: scale(1.1);
+            text-shadow: 0 0 20px #ffd700;
+        }
+
+        /* Choice system - beautiful and clear */
+        .choice-moment {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 1s ease;
+            text-align: center;
+        }
+
+        .choice-moment.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .choice-question {
+            font-size: 48px;
+            margin-bottom: 60px;
+            font-weight: 300;
+        }
+
+        .choices {
+            display: flex;
+            gap: 60px;
+            justify-content: center;
+        }
+
+        .choice-btn {
+            padding: 20px 60px;
+            font-size: 24px;
+            font-family: 'Crimson Text', serif;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            background: transparent;
+            color: #fff;
+            border: 2px solid #fff;
+            letter-spacing: 2px;
+        }
+
+        .choice-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .choice-btn:hover::before {
+            left: 0;
+        }
+
+        .choice-btn.compassion {
+            border-color: #90EE90;
+            color: #90EE90;
+        }
+
+        .choice-btn.compassion::before {
+            background: #90EE90;
+        }
+
+        .choice-btn.compassion:hover {
+            color: #000;
+        }
+
+        .choice-btn.indifference {
+            border-color: #FFB6C1;
+            color: #FFB6C1;
+        }
+
+        .choice-btn.indifference::before {
+            background: #FFB6C1;
+        }
+
+        .choice-btn.indifference:hover {
+            color: #000;
+        }
+
+        /* Finale */
+        .finale {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 2s ease;
+        }
+
+        .finale.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .finale-text {
+            font-size: 48px;
+            line-height: 1.6;
+            font-weight: 300;
+            max-width: 800px;
+        }
+
+        /* Visual effects */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: rippleEffect 2s ease-out forwards;
+        }
+
+        @keyframes rippleEffect {
+            from {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            to {
+                width: 500px;
+                height: 500px;
+                opacity: 0;
+            }
+        }
+
+        /* Navigation hint */
+        .nav-hint {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            opacity: 0.7;
+            letter-spacing: 2px;
+        }
+
+        /* Loading prevention */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas for visual effects -->
+    <canvas id="universeCanvas"></canvas>
+
+    <!-- Main experience container -->
+    <div class="experience-container">
+        <!-- Opening scene -->
+        <div class="opening-scene" id="openingScene">
+            <div class="sand-container" onclick="beginExperience()">
+                <div class="grain-sand">
+                    <div class="sand-particle"></div>
+                </div>
+                <p class="instruction">Hold this grain of sand</p>
+            </div>
+        </div>
+
+        <!-- First verse -->
+        <div class="poem-display" id="verse1">
+            <div class="verse">To see a <span class="keyword" onclick="revealWorld()">World</span> in a Grain of Sand</div>
+            <div class="verse">And a <span class="keyword" onclick="revealHeaven()">Heaven</span> in a Wild Flower,</div>
+            <div class="verse">Hold <span class="keyword" onclick="revealInfinity()">Infinity</span> in the palm of your hand</div>
+            <div class="verse">And <span class="keyword" onclick="revealEternity()">Eternity</span> in an hour.</div>
+        </div>
+
+        <!-- Second verse -->
+        <div class="poem-display" id="verse2">
+            <div class="verse">A Robin Redbreast in a Cage</div>
+            <div class="verse">Puts all Heaven in a Rage.</div>
+            <div class="verse">A dove house fill'd with doves and pigeons</div>
+            <div class="verse">Shudders Hell thro' all its regions.</div>
+        </div>
+
+        <!-- Choice moment -->
+        <div class="choice-moment" id="choiceMoment">
+            <h2 class="choice-question">How do you see the world?</h2>
+            <div class="choices">
+                <button class="choice-btn compassion" onclick="chooseCompassion()">
+                    With Compassion
+                </button>
+                <button class="choice-btn indifference" onclick="chooseIndifference()">
+                    With Indifference
+                </button>
+            </div>
+        </div>
+
+        <!-- Third verse -->
+        <div class="poem-display" id="verse3">
+            <div class="verse">Each outcry of the hunted hare</div>
+            <div class="verse">A fibre from the Brain does tear.</div>
+            <div class="verse">A Skylark wounded in the wing,</div>
+            <div class="verse">A Cherubim does cease to sing.</div>
+        </div>
+
+        <!-- Finale -->
+        <div class="finale" id="finale">
+            <p class="finale-text">You have seen the infinite in the finite,<br>
+            The eternal in the temporal.<br>
+            What will you do with this vision?</p>
+        </div>
+    </div>
+
+    <!-- Navigation hint -->
+    <div class="nav-hint hidden" id="navHint">Scroll to continue your journey</div>
+
+    <script>
+        // Global state
+        let currentScene = 0;
+        let particles = [];
+        let mouseX = 0;
+        let mouseY = 0;
+
+        // Canvas setup
+        const canvas = document.getElementById('universeCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Particle system
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.life = 1;
+                this.decay = Math.random() * 0.02 + 0.005;
+                this.color = `hsl(${Math.random() * 60 + 30}, 100%, 70%)`;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= this.decay;
+                
+                // Attraction to mouse
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 200) {
+                    this.speedX += dx * 0.0001;
+                    this.speedY += dy * 0.0001;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Mouse tracking
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        // Animation loop
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Add new particles at mouse position
+            if (Math.random() < 0.1) {
+                particles.push(new Particle(mouseX, mouseY));
+            }
+            
+            // Update and draw particles
+            particles = particles.filter(particle => {
+                particle.update();
+                particle.draw();
+                return particle.life > 0;
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Begin experience
+        function beginExperience() {
+            const opening = document.getElementById('openingScene');
+            opening.classList.add('hidden');
+            
+            // Create explosion effect
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle(
+                    canvas.width / 2,
+                    canvas.height / 2
+                ));
+            }
+            
+            setTimeout(() => {
+                showVerse('verse1');
+                document.getElementById('navHint').classList.remove('hidden');
+                initScrolling();
+            }, 1000);
+        }
+
+        // Show verse with animation
+        function showVerse(verseId) {
+            // Hide all
+            document.querySelectorAll('.poem-display, .choice-moment, .finale').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show current
+            const verse = document.getElementById(verseId);
+            verse.classList.add('active');
+            
+            // Animate lines
+            const lines = verse.querySelectorAll('.verse');
+            lines.forEach((line, index) => {
+                setTimeout(() => {
+                    line.classList.add('visible');
+                }, index * 500);
+            });
+        }
+
+        // Scroll navigation
+        function initScrolling() {
+            let scrollTimeout;
+            
+            window.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    if (e.deltaY > 0) {
+                        nextScene();
+                    } else {
+                        previousScene();
+                    }
+                }, 100);
+            }, { passive: false });
+        }
+
+        // Scene navigation
+        function nextScene() {
+            currentScene++;
+            
+            switch(currentScene) {
+                case 1:
+                    showVerse('verse2');
+                    break;
+                case 2:
+                    showChoiceMoment();
+                    break;
+                case 3:
+                    showVerse('verse3');
+                    break;
+                case 4:
+                    showFinale();
+                    break;
+            }
+        }
+
+        function previousScene() {
+            if (currentScene > 0) {
+                currentScene--;
+                // Navigate back logic here
+            }
+        }
+
+        // Show choice moment
+        function showChoiceMoment() {
+            document.getElementById('navHint').classList.add('hidden');
+            document.querySelectorAll('.poem-display').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.getElementById('choiceMoment').classList.add('active');
+        }
+
+        // Choices
+        function chooseCompassion() {
+            createRipple(window.innerWidth / 2, window.innerHeight / 2, '#90EE90');
+            document.getElementById('choiceMoment').classList.remove('active');
+            document.getElementById('navHint').classList.remove('hidden');
+            
+            // Change particle behavior
+            particles.forEach(p => {
+                p.color = '#90EE90';
+                p.decay *= 0.5;
+            });
+            
+            setTimeout(() => nextScene(), 1000);
+        }
+
+        function chooseIndifference() {
+            createRipple(window.innerWidth / 2, window.innerHeight / 2, '#FFB6C1');
+            document.getElementById('choiceMoment').classList.remove('active');
+            document.getElementById('navHint').classList.remove('hidden');
+            
+            // Change particle behavior
+            particles.forEach(p => {
+                p.color = '#FFB6C1';
+                p.decay *= 2;
+            });
+            
+            setTimeout(() => nextScene(), 1000);
+        }
+
+        // Show finale
+        function showFinale() {
+            document.getElementById('navHint').classList.add('hidden');
+            document.querySelectorAll('.poem-display').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.getElementById('finale').classList.add('active');
+        }
+
+        // Interactive keyword effects
+        function revealWorld() {
+            createRipple(mouseX, mouseY, '#ffd700');
+            // Create spiral of particles
+            for (let i = 0; i < 50; i++) {
+                const angle = (i / 50) * Math.PI * 2;
+                const particle = new Particle(mouseX, mouseY);
+                particle.speedX = Math.cos(angle) * 2;
+                particle.speedY = Math.sin(angle) * 2;
+                particles.push(particle);
+            }
+        }
+
+        function revealHeaven() {
+            createRipple(mouseX, mouseY, '#ffffff');
+            // Create ascending particles
+            for (let i = 0; i < 30; i++) {
+                const particle = new Particle(mouseX + (Math.random() - 0.5) * 100, mouseY);
+                particle.speedY = -Math.random() * 3;
+                particle.color = '#ffffff';
+                particles.push(particle);
+            }
+        }
+
+        function revealInfinity() {
+            createRipple(mouseX, mouseY, '#9370DB');
+            // Create infinity pattern
+            for (let i = 0; i < 100; i++) {
+                const t = (i / 100) * Math.PI * 4;
+                const x = Math.sin(t) * 100;
+                const y = Math.sin(2 * t) * 50;
+                const particle = new Particle(mouseX + x, mouseY + y);
+                particle.decay = 0.002;
+                particle.color = '#9370DB';
+                particles.push(particle);
+            }
+        }
+
+        function revealEternity() {
+            createRipple(mouseX, mouseY, '#FF1493');
+            // Create time spiral
+            for (let i = 0; i < 60; i++) {
+                const angle = (i / 60) * Math.PI * 6;
+                const radius = i * 2;
+                const particle = new Particle(
+                    mouseX + Math.cos(angle) * radius,
+                    mouseY + Math.sin(angle) * radius
+                );
+                particle.color = '#FF1493';
+                particle.decay = 0.001;
+                particles.push(particle);
+            }
+        }
+
+        // Create ripple effect
+        function createRipple(x, y, color) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.style.border = `3px solid ${color}`;
+            ripple.style.transform = 'translate(-50%, -50%)';
+            document.body.appendChild(ripple);
+            
+            setTimeout(() => ripple.remove(), 2000);
+        }
+    </script>
+</body>
+</html>

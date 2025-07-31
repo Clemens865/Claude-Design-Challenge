@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Road Not Taken - An Interactive Journey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --autumn-gold: #FFD700;
+            --autumn-orange: #FF8C00;
+            --autumn-red: #DC143C;
+            --forest-green: #228B22;
+            --forest-brown: #8B4513;
+            --sky-blue: #87CEEB;
+            --text-shadow: #3d2914;
+        }
+
+        body {
+            font-family: 'Baskerville', 'Georgia', serif;
+            overflow: hidden;
+            background: linear-gradient(to bottom, 
+                var(--sky-blue) 0%, 
+                #FFE4B5 40%, 
+                #FFA500 100%);
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="%23FFD700" opacity="0.8"/></svg>') 16 16, auto;
+        }
+
+        /* Three.js container */
+        #forest-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Welcome screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, 
+                rgba(255, 215, 0, 0.3) 0%, 
+                rgba(255, 140, 0, 0.5) 50%, 
+                rgba(139, 69, 19, 0.8) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 2s ease-out;
+        }
+
+        .welcome-title {
+            font-size: clamp(2rem, 5vw, 4rem);
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeInUp 2s ease-out forwards;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeInUp 2s ease-out 0.5s forwards;
+        }
+
+        .start-journey {
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            background: var(--autumn-gold);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: fadeInUp 2s ease-out 1s forwards;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .start-journey:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            background: var(--autumn-orange);
+            color: white;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+        }
+
+        /* Path choice interface */
+        .path-choice {
+            position: fixed;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            z-index: 100;
+            text-align: center;
+        }
+
+        .choice-container {
+            display: flex;
+            gap: 4rem;
+            margin-bottom: 2rem;
+        }
+
+        .path-button {
+            width: 200px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid var(--autumn-gold);
+            border-radius: 30px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .path-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--autumn-gold), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .path-button:hover::before {
+            left: 100%;
+        }
+
+        .path-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .left-path {
+            background: linear-gradient(135deg, #F0E68C, #FFD700);
+        }
+
+        .right-path {
+            background: linear-gradient(135deg, #90EE90, #228B22);
+        }
+
+        /* Poem display */
+        .poem-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 50;
+            max-width: 800px;
+            padding: 2rem;
+            display: none;
+        }
+
+        .stanza {
+            margin: 2rem 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s ease-out;
+        }
+
+        .stanza.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .poem-line {
+            font-size: 1.8rem;
+            line-height: 2;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            margin: 0.5rem 0;
+        }
+
+        /* Falling leaves */
+        .leaf {
+            position: fixed;
+            top: -50px;
+            z-index: 10;
+            user-select: none;
+            pointer-events: none;
+            animation: falling linear infinite;
+        }
+
+        @keyframes falling {
+            to {
+                transform: translateY(calc(100vh + 50px)) rotate(360deg);
+            }
+        }
+
+        /* Journey tracker */
+        .journey-tracker {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            z-index: 200;
+            display: none;
+        }
+
+        .journey-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--forest-brown);
+        }
+
+        .choice-record {
+            font-size: 0.9rem;
+            margin: 0.3rem 0;
+            color: #666;
+        }
+
+        /* Reflection screen */
+        .reflection-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                rgba(0,0,0,0.8), 
+                rgba(139,69,19,0.9));
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .reflection-title {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeIn 2s ease-out forwards;
+        }
+
+        .journey-visualization {
+            width: 600px;
+            height: 200px;
+            margin: 2rem 0;
+            opacity: 0;
+            animation: fadeIn 2s ease-out 1s forwards;
+        }
+
+        .final-thought {
+            font-size: 1.5rem;
+            font-style: italic;
+            opacity: 0;
+            animation: fadeIn 2s ease-out 2s forwards;
+            max-width: 800px;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* Forest canvas for 2D fallback */
+        #forest-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .choice-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .path-button {
+                width: 250px;
+            }
+            
+            .poem-line {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* Sound toggle */
+        .sound-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            z-index: 300;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .sound-toggle:hover {
+            transform: scale(1.1);
+            background: var(--autumn-gold);
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <h1 class="welcome-title">The Road Not Taken</h1>
+        <p class="welcome-subtitle">by Robert Frost</p>
+        <button class="start-journey" onclick="startJourney()">Begin Your Journey</button>
+    </div>
+
+    <!-- Forest Scene Container -->
+    <canvas id="forest-canvas"></canvas>
+
+    <!-- Path Choice Interface -->
+    <div class="path-choice" id="pathChoice">
+        <div class="choice-container">
+            <button class="path-button left-path" onclick="choosePath('left')">
+                Take the Worn Path
+            </button>
+            <button class="path-button right-path" onclick="choosePath('right')">
+                Take the Grassy Path
+            </button>
+        </div>
+        <p style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+            "Two roads diverged in a yellow wood..."
+        </p>
+    </div>
+
+    <!-- Poem Container -->
+    <div class="poem-container" id="poemContainer"></div>
+
+    <!-- Journey Tracker -->
+    <div class="journey-tracker" id="journeyTracker">
+        <div class="journey-title">Your Journey</div>
+        <div id="journeyLog"></div>
+    </div>
+
+    <!-- Reflection Screen -->
+    <div class="reflection-screen" id="reflectionScreen">
+        <h2 class="reflection-title">Your Journey Through the Woods</h2>
+        <canvas class="journey-visualization" id="journeyCanvas"></canvas>
+        <p class="final-thought">
+            "I took the one less traveled by,<br>
+            And that has made all the difference."
+        </p>
+    </div>
+
+    <!-- Sound Toggle -->
+    <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+
+    <script>
+        // Global variables
+        let journeyChoices = [];
+        let currentStanza = 0;
+        let soundEnabled = true;
+        let audioContext;
+        let backgroundAmbience;
+
+        // Poem stanzas
+        const poemStanzas = [
+            [
+                "Two roads diverged in a yellow wood,",
+                "And sorry I could not travel both",
+                "And be one traveler, long I stood",
+                "And looked down one as far as I could",
+                "To where it bent in the undergrowth;"
+            ],
+            [
+                "Then took the other, as just as fair,",
+                "And having perhaps the better claim,",
+                "Because it was grassy and wanted wear;",
+                "Though as for that the passing there",
+                "Had worn them really about the same,"
+            ],
+            [
+                "And both that morning equally lay",
+                "In leaves no step had trodden black.",
+                "Oh, I kept the first for another day!",
+                "Yet knowing how way leads on to way,",
+                "I doubted if I should ever come back."
+            ],
+            [
+                "I shall be telling this with a sigh",
+                "Somewhere ages and ages hence:",
+                "Two roads diverged in a wood, and I—",
+                "I took the one less traveled by,",
+                "And that has made all the difference."
+            ]
+        ];
+
+        // Initialize audio context
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                createForestAmbience();
+            }
+        }
+
+        // Create forest ambience
+        function createForestAmbience() {
+            // Create white noise for wind
+            const bufferSize = 2 * audioContext.sampleRate;
+            const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            
+            const whiteNoise = audioContext.createBufferSource();
+            whiteNoise.buffer = noiseBuffer;
+            whiteNoise.loop = true;
+            
+            // Create filters for natural sound
+            const bandpass = audioContext.createBiquadFilter();
+            bandpass.type = 'bandpass';
+            bandpass.frequency.value = 500;
+            bandpass.Q.value = 0.5;
+            
+            const gain = audioContext.createGain();
+            gain.gain.value = 0.05;
+            
+            whiteNoise.connect(bandpass);
+            bandpass.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            whiteNoise.start(0);
+            backgroundAmbience = whiteNoise;
+        }
+
+        // Start journey
+        function startJourney() {
+            initAudio();
+            document.getElementById('welcomeScreen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('welcomeScreen').style.display = 'none';
+                initForest();
+                showPathChoice();
+                document.getElementById('journeyTracker').style.display = 'block';
+            }, 2000);
+        }
+
+        // Initialize forest scene
+        function initForest() {
+            const canvas = document.getElementById('forest-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Draw forest background
+            drawForest(ctx);
+            
+            // Create falling leaves
+            createFallingLeaves();
+            
+            // Animate forest
+            animateForest(ctx);
+        }
+
+        // Draw forest scene
+        function drawForest(ctx) {
+            const width = ctx.canvas.width;
+            const height = ctx.canvas.height;
+            
+            // Sky gradient
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, height);
+            skyGradient.addColorStop(0, '#87CEEB');
+            skyGradient.addColorStop(0.4, '#FFE4B5');
+            skyGradient.addColorStop(1, '#FFA500');
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            // Draw trees
+            for (let i = 0; i < 50; i++) {
+                drawTree(ctx, 
+                    Math.random() * width, 
+                    height * 0.3 + Math.random() * height * 0.7,
+                    20 + Math.random() * 40,
+                    100 + Math.random() * 200
+                );
+            }
+            
+            // Draw paths
+            drawPaths(ctx);
+        }
+
+        // Draw individual tree
+        function drawTree(ctx, x, y, width, height) {
+            // Trunk
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(x - width/2, y - height, width, height);
+            
+            // Leaves
+            const leafColors = ['#FFD700', '#FF8C00', '#DC143C', '#228B22'];
+            for (let i = 0; i < 100; i++) {
+                ctx.fillStyle = leafColors[Math.floor(Math.random() * leafColors.length)];
+                ctx.globalAlpha = 0.8;
+                ctx.beginPath();
+                ctx.arc(
+                    x + (Math.random() - 0.5) * width * 3,
+                    y - height + (Math.random() - 0.5) * height,
+                    Math.random() * 10 + 5,
+                    0, Math.PI * 2
+                );
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        // Draw diverging paths
+        function drawPaths(ctx) {
+            const width = ctx.canvas.width;
+            const height = ctx.canvas.height;
+            const centerX = width / 2;
+            const startY = height * 0.8;
+            
+            ctx.strokeStyle = '#D2691E';
+            ctx.lineWidth = 30;
+            ctx.lineCap = 'round';
+            
+            // Left path
+            ctx.beginPath();
+            ctx.moveTo(centerX, startY);
+            ctx.quadraticCurveTo(centerX - 100, startY - 200, centerX - 300, 0);
+            ctx.stroke();
+            
+            // Right path
+            ctx.beginPath();
+            ctx.moveTo(centerX, startY);
+            ctx.quadraticCurveTo(centerX + 100, startY - 200, centerX + 300, 0);
+            ctx.stroke();
+        }
+
+        // Create falling leaves
+        function createFallingLeaves() {
+            const leafEmojis = ['🍂', '🍁', '🍃'];
+            
+            setInterval(() => {
+                if (Math.random() < 0.3) {
+                    const leaf = document.createElement('div');
+                    leaf.className = 'leaf';
+                    leaf.style.left = Math.random() * window.innerWidth + 'px';
+                    leaf.style.animationDuration = (5 + Math.random() * 5) + 's';
+                    leaf.style.fontSize = (20 + Math.random() * 20) + 'px';
+                    leaf.textContent = leafEmojis[Math.floor(Math.random() * leafEmojis.length)];
+                    document.body.appendChild(leaf);
+                    
+                    setTimeout(() => leaf.remove(), 10000);
+                }
+            }, 500);
+        }
+
+        // Animate forest
+        function animateForest(ctx) {
+            // Add subtle animation effects here
+            requestAnimationFrame(() => animateForest(ctx));
+        }
+
+        // Show path choice
+        function showPathChoice() {
+            document.getElementById('pathChoice').style.display = 'block';
+        }
+
+        // Choose path
+        function choosePath(direction) {
+            journeyChoices.push({
+                choice: direction,
+                stanza: currentStanza,
+                timestamp: new Date().toLocaleTimeString()
+            });
+            
+            updateJourneyLog();
+            playPathSound(direction);
+            
+            document.getElementById('pathChoice').style.display = 'none';
+            showPoem();
+            
+            // Show next choice after delay
+            if (currentStanza < 3) {
+                setTimeout(() => {
+                    currentStanza++;
+                    showPathChoice();
+                }, 8000);
+            } else {
+                setTimeout(showReflection, 8000);
+            }
+        }
+
+        // Show poem stanza
+        function showPoem() {
+            const container = document.getElementById('poemContainer');
+            container.style.display = 'block';
+            container.innerHTML = '';
+            
+            const stanza = document.createElement('div');
+            stanza.className = 'stanza';
+            
+            poemStanzas[currentStanza].forEach(line => {
+                const lineEl = document.createElement('p');
+                lineEl.className = 'poem-line';
+                lineEl.textContent = line;
+                stanza.appendChild(lineEl);
+            });
+            
+            container.appendChild(stanza);
+            
+            setTimeout(() => {
+                stanza.classList.add('visible');
+            }, 100);
+            
+            setTimeout(() => {
+                container.style.display = 'none';
+            }, 7000);
+        }
+
+        // Update journey log
+        function updateJourneyLog() {
+            const log = document.getElementById('journeyLog');
+            log.innerHTML = '';
+            
+            journeyChoices.forEach((choice, index) => {
+                const record = document.createElement('div');
+                record.className = 'choice-record';
+                record.textContent = `Choice ${index + 1}: ${choice.choice === 'left' ? 'Worn' : 'Grassy'} path`;
+                log.appendChild(record);
+            });
+        }
+
+        // Play path sound
+        function playPathSound(direction) {
+            if (!audioContext || !soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Different tones for different paths
+            oscillator.frequency.value = direction === 'left' ? 440 : 554.37;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 1);
+        }
+
+        // Show reflection
+        function showReflection() {
+            document.getElementById('reflectionScreen').style.display = 'flex';
+            drawJourneyVisualization();
+        }
+
+        // Draw journey visualization
+        function drawJourneyVisualization() {
+            const canvas = document.getElementById('journeyCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = 600;
+            canvas.height = 200;
+            
+            // Draw journey path
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(50, 150);
+            
+            let x = 50;
+            journeyChoices.forEach((choice, index) => {
+                x += 100;
+                const y = choice.choice === 'left' ? 50 : 100;
+                ctx.lineTo(x, y);
+            });
+            
+            ctx.stroke();
+            
+            // Draw choice points
+            x = 50;
+            ctx.fillStyle = '#FFD700';
+            journeyChoices.forEach((choice, index) => {
+                x += 100;
+                const y = choice.choice === 'left' ? 50 : 100;
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Toggle sound
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundToggle').textContent = soundEnabled ? '🔊' : '🔇';
+            
+            if (backgroundAmbience) {
+                if (soundEnabled) {
+                    createForestAmbience();
+                } else {
+                    backgroundAmbience.stop();
+                }
+            }
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('forest-canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            drawForest(canvas.getContext('2d'));
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hope is the thing with feathers - An Interactive Meditation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dawn-pink: #FFE4E1;
+            --sky-blue: #E6F3FF;
+            --cloud-white: #FEFEFE;
+            --storm-gray: #4A5568;
+            --feather-gold: #FFD700;
+            --soul-lavender: #E6E6FA;
+            --hope-coral: #FFB6C1;
+        }
+
+        body {
+            font-family: 'Didot', 'Bodoni MT', 'Georgia', serif;
+            overflow: hidden;
+            background: linear-gradient(180deg, 
+                var(--dawn-pink) 0%, 
+                var(--sky-blue) 50%, 
+                var(--soul-lavender) 100%);
+            cursor: none;
+            position: relative;
+            transition: background 5s ease;
+        }
+
+        /* Custom cursor as small feather */
+        .feather-cursor {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            z-index: 10000;
+            transition: transform 0.1s ease;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        /* Main container */
+        .universe {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Central bird container */
+        .bird-soul {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            z-index: 100;
+        }
+
+        /* Animated bird SVG */
+        #hope-bird {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.5));
+            transition: all 0.5s ease;
+        }
+
+        #hope-bird:hover {
+            filter: drop-shadow(0 0 50px rgba(255, 215, 0, 0.8));
+            transform: scale(1.1);
+        }
+
+        /* Floating feathers */
+        .feather {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            opacity: 0.7;
+            pointer-events: none;
+            animation: floatFeather 20s infinite ease-in-out;
+        }
+
+        @keyframes floatFeather {
+            0% { transform: translateY(100vh) rotate(0deg) translateX(0); opacity: 0; }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% { transform: translateY(-100vh) rotate(360deg) translateX(100px); opacity: 0; }
+        }
+
+        /* Musical notes visualization */
+        .music-note {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0;
+            animation: musicFloat 4s ease-out;
+            pointer-events: none;
+            color: var(--feather-gold);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        @keyframes musicFloat {
+            0% { transform: translateY(0) scale(0); opacity: 0; }
+            20% { opacity: 1; transform: scale(1); }
+            100% { transform: translateY(-200px) translateX(50px); opacity: 0; }
+        }
+
+        /* Weather system */
+        .weather-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 3s ease;
+        }
+
+        .storm-active {
+            opacity: 1;
+            background: radial-gradient(circle at center, 
+                transparent 30%, 
+                rgba(74, 85, 104, 0.3) 100%);
+            animation: stormPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes stormPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Rain effect */
+        .rain {
+            position: absolute;
+            width: 2px;
+            height: 100px;
+            background: linear-gradient(to bottom, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.6) 50%, 
+                transparent 100%);
+            animation: rainfall 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes rainfall {
+            to { transform: translateY(100vh); }
+        }
+
+        /* Poem display */
+        .poem-container {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 200;
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .stanza {
+            margin: 1.5rem 0;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInStanza 2s ease-out forwards;
+        }
+
+        .stanza:nth-child(1) { animation-delay: 1s; }
+        .stanza:nth-child(2) { animation-delay: 3s; }
+        .stanza:nth-child(3) { animation-delay: 5s; }
+
+        @keyframes fadeInStanza {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .poem-line {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #2D3748;
+            margin: 0.3rem 0;
+            letter-spacing: 0.05em;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .poem-line em {
+            font-style: italic;
+            color: var(--hope-coral);
+            font-weight: 500;
+        }
+
+        /* Hope meter */
+        .hope-meter {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 200px;
+            z-index: 300;
+        }
+
+        .hope-label {
+            font-size: 0.9rem;
+            color: #4A5568;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.1em;
+        }
+
+        .hope-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .hope-fill {
+            height: 100%;
+            width: 20%;
+            background: linear-gradient(90deg, 
+                var(--hope-coral) 0%, 
+                var(--feather-gold) 100%);
+            transition: width 1s ease;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Breathing guide */
+        .breathing-circle {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #4A5568;
+            animation: breathe 8s ease-in-out infinite;
+            cursor: pointer;
+            z-index: 300;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* Constellation drawing area */
+        .constellation-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+        }
+
+        /* Loading poetry */
+        .loading-poetry {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            color: #4A5568;
+            letter-spacing: 0.2em;
+            opacity: 1;
+            transition: opacity 2s ease;
+            z-index: 1000;
+        }
+
+        /* Interactive instructions */
+        .instructions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #4A5568;
+            max-width: 250px;
+            opacity: 0;
+            transform: translateX(20px);
+            animation: slideIn 1s ease-out 7s forwards;
+            z-index: 250;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .bird-soul {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .poem-line {
+                font-size: 1rem;
+            }
+            
+            .instructions {
+                display: none;
+            }
+        }
+
+        /* Storm mode */
+        body.storm-mode {
+            background: linear-gradient(180deg, 
+                #4A5568 0%, 
+                #2D3748 50%, 
+                #1A202C 100%);
+            transition: background 3s ease;
+        }
+
+        body.storm-mode .poem-line {
+            color: #E2E8F0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading screen -->
+    <div class="loading-poetry" id="loadingText">Hope is the thing with feathers...</div>
+
+    <!-- Custom feather cursor -->
+    <svg class="feather-cursor" id="cursorFeather" viewBox="0 0 30 30">
+        <path d="M15 2 C12 2 10 5 10 10 L10 20 C10 25 12 28 15 28 C18 28 20 25 20 20 L20 10 C20 5 18 2 15 2 Z" 
+              fill="url(#featherGradient)" opacity="0.8"/>
+        <defs>
+            <linearGradient id="featherGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FFE4E1;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FFD700;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- Main universe container -->
+    <div class="universe">
+        <!-- Constellation canvas -->
+        <canvas class="constellation-canvas" id="constellationCanvas"></canvas>
+
+        <!-- Central bird -->
+        <div class="bird-soul">
+            <svg id="hope-bird" viewBox="0 0 300 300">
+                <!-- Bird body -->
+                <ellipse cx="150" cy="180" rx="60" ry="80" fill="url(#birdGradient)" />
+                
+                <!-- Bird head -->
+                <circle cx="150" cy="120" r="40" fill="url(#birdGradient)" />
+                
+                <!-- Wings -->
+                <path id="leftWing" d="M 90 160 Q 30 140 20 180 Q 40 200 90 180" fill="url(#wingGradient)" />
+                <path id="rightWing" d="M 210 160 Q 270 140 280 180 Q 260 200 210 180" fill="url(#wingGradient)" />
+                
+                <!-- Eye -->
+                <circle cx="140" cy="115" r="5" fill="#2D3748" />
+                
+                <!-- Beak -->
+                <path d="M 120 120 L 110 125 L 120 130 Z" fill="#FFB6C1" />
+                
+                <defs>
+                    <linearGradient id="birdGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFE4E1;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#FFB6C1;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#E6E6FA;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="wingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.8" />
+                        <stop offset="100%" style="stop-color:#FFB6C1;stop-opacity:0.9" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <!-- Weather overlay -->
+        <div class="weather-overlay" id="weatherOverlay"></div>
+
+        <!-- Poem container -->
+        <div class="poem-container">
+            <div class="stanza">
+                <p class="poem-line"><em>"Hope"</em> is the thing with feathers –</p>
+                <p class="poem-line">That perches in the soul –</p>
+                <p class="poem-line">And sings the tune without the words –</p>
+                <p class="poem-line">And never stops – at all –</p>
+            </div>
+            
+            <div class="stanza">
+                <p class="poem-line">And sweetest – in the Gale – is heard –</p>
+                <p class="poem-line">And sore must be the storm –</p>
+                <p class="poem-line">That could abash the little Bird</p>
+                <p class="poem-line">That kept so many warm –</p>
+            </div>
+            
+            <div class="stanza">
+                <p class="poem-line">I've heard it in the chillest land –</p>
+                <p class="poem-line">And on the strangest Sea –</p>
+                <p class="poem-line">Yet – never – in Extremity,</p>
+                <p class="poem-line">It asked a crumb – of Me.</p>
+            </div>
+        </div>
+
+        <!-- Hope meter -->
+        <div class="hope-meter">
+            <div class="hope-label">Hope</div>
+            <div class="hope-bar">
+                <div class="hope-fill" id="hopeFill"></div>
+            </div>
+        </div>
+
+        <!-- Breathing circle -->
+        <div class="breathing-circle" onclick="toggleBreathing()">
+            <span id="breathText">Breathe</span>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <p><strong>Interact with Hope:</strong></p>
+            <p>• Move your cursor to spread feathers</p>
+            <p>• Click to release musical notes</p>
+            <p>• Draw constellations in the sky</p>
+            <p>• Press SPACE for storm</p>
+            <p>• Click the circle to breathe with hope</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let hopeLevel = 20;
+        let isStorming = false;
+        let audioContext;
+        let isBreathing = false;
+        let mouseTrail = [];
+        let stars = [];
+        let feathers = [];
+
+        // Initialize audio context
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        // Remove loading screen
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loadingText').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loadingText').style.display = 'none';
+                }, 2000);
+            }, 2000);
+            
+            // Initialize
+            initAudio();
+            createFeathers();
+            initConstellation();
+            animateBird();
+        });
+
+        // Custom cursor movement
+        document.addEventListener('mousemove', (e) => {
+            const cursor = document.getElementById('cursorFeather');
+            cursor.style.left = e.clientX - 15 + 'px';
+            cursor.style.top = e.clientY - 15 + 'px';
+            
+            // Add to trail for constellation
+            mouseTrail.push({ x: e.clientX, y: e.clientY, time: Date.now() });
+            if (mouseTrail.length > 100) mouseTrail.shift();
+            
+            // Spread feathers near bird
+            const birdRect = document.querySelector('.bird-soul').getBoundingClientRect();
+            const distance = Math.sqrt(
+                Math.pow(e.clientX - (birdRect.left + birdRect.width/2), 2) +
+                Math.pow(e.clientY - (birdRect.top + birdRect.height/2), 2)
+            );
+            
+            if (distance < 200) {
+                increaseHope(0.1);
+                if (Math.random() < 0.1) {
+                    createFloatingFeather(e.clientX, e.clientY);
+                }
+            }
+        });
+
+        // Create floating feathers
+        function createFeathers() {
+            setInterval(() => {
+                if (Math.random() < 0.3) {
+                    createFloatingFeather(
+                        Math.random() * window.innerWidth,
+                        window.innerHeight + 50
+                    );
+                }
+            }, 3000);
+        }
+
+        function createFloatingFeather(x, y) {
+            const feather = document.createElement('div');
+            feather.className = 'feather';
+            feather.style.left = x + 'px';
+            feather.style.top = y + 'px';
+            
+            const svg = `<svg viewBox="0 0 40 40" width="40" height="40">
+                <path d="M20 5 C18 5 16 8 16 15 L16 30 C16 35 18 38 20 38 C22 38 24 35 24 30 L24 15 C24 8 22 5 20 5 Z" 
+                      fill="${getRandomFeatherColor()}" opacity="0.8"/>
+            </svg>`;
+            
+            feather.innerHTML = svg;
+            feather.style.animationDuration = (15 + Math.random() * 10) + 's';
+            feather.style.animationDelay = Math.random() * 2 + 's';
+            
+            document.querySelector('.universe').appendChild(feather);
+            
+            setTimeout(() => feather.remove(), 25000);
+        }
+
+        function getRandomFeatherColor() {
+            const colors = ['#FFE4E1', '#FFB6C1', '#FFD700', '#E6E6FA', '#FFF'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Click to create music notes
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.breathing-circle') || e.target.closest('.instructions')) return;
+            
+            createMusicNote(e.clientX, e.clientY);
+            playHopeSound();
+            increaseHope(2);
+        });
+
+        function createMusicNote(x, y) {
+            const note = document.createElement('div');
+            note.className = 'music-note';
+            note.textContent = ['♪', '♫', '♬'][Math.floor(Math.random() * 3)];
+            note.style.left = x + 'px';
+            note.style.top = y + 'px';
+            
+            document.querySelector('.universe').appendChild(note);
+            
+            setTimeout(() => note.remove(), 4000);
+        }
+
+        function playHopeSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Pentatonic scale for pleasant sounds
+            const notes = [523.25, 587.33, 659.25, 783.99, 880];
+            oscillator.frequency.value = notes[Math.floor(Math.random() * notes.length)];
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.05);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 1);
+        }
+
+        // Bird animation
+        function animateBird() {
+            const leftWing = document.getElementById('leftWing');
+            const rightWing = document.getElementById('rightWing');
+            let wingAngle = 0;
+            
+            setInterval(() => {
+                wingAngle += 0.1;
+                const flap = Math.sin(wingAngle) * 10;
+                
+                leftWing.setAttribute('transform', `rotate(${-flap} 90 160)`);
+                rightWing.setAttribute('transform', `rotate(${flap} 210 160)`);
+            }, 50);
+        }
+
+        // Hope meter management
+        function increaseHope(amount) {
+            hopeLevel = Math.min(100, hopeLevel + amount);
+            document.getElementById('hopeFill').style.width = hopeLevel + '%';
+            
+            // Change background based on hope level
+            if (hopeLevel > 80) {
+                document.body.style.background = 'linear-gradient(180deg, #FFE4E1 0%, #FFD700 50%, #FFB6C1 100%)';
+            }
+        }
+
+        // Storm toggle
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                e.preventDefault();
+                toggleStorm();
+            }
+        });
+
+        function toggleStorm() {
+            isStorming = !isStorming;
+            document.body.classList.toggle('storm-mode', isStorming);
+            document.getElementById('weatherOverlay').classList.toggle('storm-active', isStorming);
+            
+            if (isStorming) {
+                createRain();
+                // Hope persists through storm
+                setTimeout(() => increaseHope(20), 2000);
+            } else {
+                clearRain();
+            }
+        }
+
+        function createRain() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const rain = document.createElement('div');
+                    rain.className = 'rain';
+                    rain.style.left = Math.random() * window.innerWidth + 'px';
+                    rain.style.animationDuration = (0.5 + Math.random() * 0.5) + 's';
+                    rain.style.display = 'block';
+                    
+                    document.querySelector('.universe').appendChild(rain);
+                    
+                    setTimeout(() => rain.remove(), 1000);
+                }, i * 100);
+            }
+        }
+
+        function clearRain() {
+            document.querySelectorAll('.rain').forEach(rain => rain.remove());
+        }
+
+        // Breathing interaction
+        function toggleBreathing() {
+            isBreathing = !isBreathing;
+            const breathText = document.getElementById('breathText');
+            
+            if (isBreathing) {
+                breathingCycle();
+            }
+        }
+
+        function breathingCycle() {
+            if (!isBreathing) return;
+            
+            const breathText = document.getElementById('breathText');
+            breathText.textContent = 'Inhale';
+            increaseHope(1);
+            
+            setTimeout(() => {
+                if (!isBreathing) return;
+                breathText.textContent = 'Hold';
+                
+                setTimeout(() => {
+                    if (!isBreathing) return;
+                    breathText.textContent = 'Exhale';
+                    
+                    setTimeout(() => {
+                        if (!isBreathing) return;
+                        breathText.textContent = 'Hold';
+                        
+                        setTimeout(() => {
+                            if (isBreathing) breathingCycle();
+                            else breathText.textContent = 'Breathe';
+                        }, 2000);
+                    }, 4000);
+                }, 2000);
+            }, 4000);
+        }
+
+        // Constellation drawing
+        function initConstellation() {
+            const canvas = document.getElementById('constellationCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Create random stars
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2,
+                    brightness: Math.random()
+                });
+            }
+            
+            drawConstellation();
+        }
+
+        function drawConstellation() {
+            const canvas = document.getElementById('constellationCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw stars
+            stars.forEach(star => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness * 0.5})`;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Draw mouse trail as constellation
+            if (mouseTrail.length > 1) {
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                for (let i = 1; i < mouseTrail.length; i++) {
+                    const age = Date.now() - mouseTrail[i].time;
+                    if (age < 3000) {
+                        ctx.globalAlpha = 1 - (age / 3000);
+                        ctx.lineTo(mouseTrail[i].x, mouseTrail[i].y);
+                    }
+                }
+                
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+            
+            requestAnimationFrame(drawConstellation);
+        }
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('constellationCanvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

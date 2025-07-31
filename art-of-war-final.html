@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Art of War - Master the Art of Deception</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Pro:wght@300;400;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --ink-black: #0a0a0a;
+            --parchment: #f4f1e8;
+            --blood-red: #8b0000;
+            --gold: #d4af37;
+            --shadow: #2a2a2a;
+            --mist: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Crimson Pro', serif;
+            background: var(--ink-black);
+            color: var(--parchment);
+            overflow: hidden;
+            height: 100vh;
+            cursor: crosshair;
+        }
+
+        /* Opening Screen */
+        .opening {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            background: var(--ink-black);
+            transition: all 2s ease;
+        }
+
+        .opening.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .title {
+            font-family: 'Cinzel', serif;
+            font-size: 72px;
+            font-weight: 600;
+            color: var(--gold);
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeIn 2s ease forwards;
+        }
+
+        .subtitle {
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: 5px;
+            opacity: 0;
+            animation: fadeIn 2s ease 0.5s forwards;
+        }
+
+        .begin-btn {
+            margin-top: 60px;
+            padding: 20px 60px;
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            background: transparent;
+            color: var(--parchment);
+            border: 2px solid var(--gold);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: fadeIn 2s ease 1s forwards;
+            letter-spacing: 3px;
+        }
+
+        .begin-btn:hover {
+            background: var(--gold);
+            color: var(--ink-black);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Main Battlefield */
+        .battlefield {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .battlefield.active {
+            display: block;
+        }
+
+        /* War Map Canvas */
+        #warCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Fog of War */
+        .fog-of-war {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+                transparent 0%, 
+                transparent 10%, 
+                rgba(0, 0, 0, 0.7) 20%, 
+                rgba(0, 0, 0, 0.95) 40%);
+            pointer-events: none;
+            z-index: 10;
+            transition: background 0.1s ease;
+        }
+
+        /* Strategic Text Display */
+        .strategy-display {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 100;
+            max-width: 800px;
+        }
+
+        .strategy-text {
+            font-family: 'Cinzel', serif;
+            font-size: 24px;
+            line-height: 1.8;
+            color: var(--gold);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .strategy-text.visible {
+            opacity: 1;
+        }
+
+        /* Forces */
+        .force {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 50;
+        }
+
+        .force.ally {
+            background: radial-gradient(circle, var(--gold), #b8860b);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+
+        .force.enemy {
+            background: radial-gradient(circle, var(--blood-red), #660000);
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
+        }
+
+        .force.decoy {
+            opacity: 0.5;
+            filter: blur(1px);
+        }
+
+        .force:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 40px currentColor;
+        }
+
+        /* Command Interface */
+        .command-interface {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 30px;
+            z-index: 200;
+        }
+
+        .command-btn {
+            padding: 15px 40px;
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--parchment);
+            border: 2px solid var(--gold);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .command-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gold);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .command-btn:hover::before {
+            left: 0;
+        }
+
+        .command-btn:hover {
+            color: var(--ink-black);
+            transform: translateY(-2px);
+        }
+
+        /* Victory/Defeat Screen */
+        .outcome {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+        }
+
+        .outcome.active {
+            display: flex;
+        }
+
+        .outcome-content {
+            text-align: center;
+        }
+
+        .outcome-title {
+            font-family: 'Cinzel', serif;
+            font-size: 64px;
+            margin-bottom: 30px;
+        }
+
+        .outcome-title.victory {
+            color: var(--gold);
+            text-shadow: 0 0 50px rgba(212, 175, 55, 0.8);
+        }
+
+        .outcome-title.defeat {
+            color: var(--blood-red);
+            text-shadow: 0 0 50px rgba(139, 0, 0, 0.8);
+        }
+
+        .outcome-wisdom {
+            font-size: 24px;
+            line-height: 1.8;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            opacity: 0.9;
+        }
+
+        .restart-btn {
+            padding: 15px 40px;
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            background: transparent;
+            color: var(--parchment);
+            border: 2px solid var(--gold);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            background: var(--gold);
+            color: var(--ink-black);
+        }
+
+        /* Info Panel */
+        .info-panel {
+            position: absolute;
+            top: 50px;
+            right: 50px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 1px solid var(--gold);
+            z-index: 150;
+            min-width: 200px;
+        }
+
+        .info-title {
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            color: var(--gold);
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            font-size: 16px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Deception Indicator */
+        .deception-meter {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            z-index: 150;
+        }
+
+        .meter-label {
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--gold);
+        }
+
+        .meter-bar {
+            width: 200px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--gold);
+            position: relative;
+        }
+
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--blood-red), var(--gold));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Animation for moving forces */
+        @keyframes moveForce {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.8); }
+            100% { transform: scale(1); }
+        }
+
+        .moving {
+            animation: moveForce 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Opening Screen -->
+    <div class="opening" id="opening">
+        <h1 class="title">THE ART OF WAR</h1>
+        <p class="subtitle">All warfare is based on deception</p>
+        <button class="begin-btn" onclick="beginWar()">BEGIN YOUR STRATEGY</button>
+    </div>
+
+    <!-- Main Battlefield -->
+    <div class="battlefield" id="battlefield">
+        <!-- War Canvas -->
+        <canvas id="warCanvas"></canvas>
+        
+        <!-- Fog of War -->
+        <div class="fog-of-war" id="fogOfWar"></div>
+
+        <!-- Strategy Display -->
+        <div class="strategy-display">
+            <p class="strategy-text" id="strategyText"></p>
+        </div>
+
+        <!-- Deception Meter -->
+        <div class="deception-meter">
+            <div class="meter-label">DECEPTION LEVEL</div>
+            <div class="meter-bar">
+                <div class="meter-fill" id="deceptionFill"></div>
+            </div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="info-panel">
+            <h3 class="info-title">INTELLIGENCE</h3>
+            <div class="info-item">
+                <span>Your Forces:</span>
+                <span id="allyCount">5</span>
+            </div>
+            <div class="info-item">
+                <span>Enemy Forces:</span>
+                <span id="enemyCount">?</span>
+            </div>
+            <div class="info-item">
+                <span>Phase:</span>
+                <span id="phase">Deception</span>
+            </div>
+        </div>
+
+        <!-- Command Interface -->
+        <div class="command-interface">
+            <button class="command-btn" onclick="executeStrategy('feign')">FEIGN WEAKNESS</button>
+            <button class="command-btn" onclick="executeStrategy('decoy')">CREATE DECOY</button>
+            <button class="command-btn" onclick="executeStrategy('strike')">STRIKE SWIFTLY</button>
+            <button class="command-btn" onclick="executeStrategy('evade')">EVADE & REPOSITION</button>
+        </div>
+    </div>
+
+    <!-- Victory/Defeat Screen -->
+    <div class="outcome" id="outcome">
+        <div class="outcome-content">
+            <h2 class="outcome-title" id="outcomeTitle"></h2>
+            <p class="outcome-wisdom" id="outcomeWisdom"></p>
+            <button class="restart-btn" onclick="restart()">STUDY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            phase: 'deception',
+            deceptionLevel: 0,
+            playerForces: [],
+            enemyForces: [],
+            decoys: [],
+            turn: 0,
+            enemyConfused: false,
+            quotes: [
+                "All warfare is based on deception.",
+                "When able to attack, we must seem unable.",
+                "When using our forces, we must seem inactive.",
+                "When we are near, we must make the enemy believe we are far away.",
+                "Hold out baits to entice the enemy.",
+                "Feign disorder, and crush him.",
+                "Pretend to be weak, that he may grow arrogant.",
+                "Attack him where he is unprepared.",
+                "Appear where you are not expected.",
+                "If your opponent is temperamental, seek to irritate him."
+            ],
+            currentQuote: 0
+        };
+
+        // Canvas setup
+        const canvas = document.getElementById('warCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Fog of war mouse tracking
+        document.addEventListener('mousemove', (e) => {
+            const fog = document.getElementById('fogOfWar');
+            fog.style.setProperty('--mouse-x', (e.clientX / window.innerWidth * 100) + '%');
+            fog.style.setProperty('--mouse-y', (e.clientY / window.innerHeight * 100) + '%');
+        });
+
+        // Begin the experience
+        function beginWar() {
+            document.getElementById('opening').classList.add('hidden');
+            document.getElementById('battlefield').classList.add('active');
+            
+            initializeForces();
+            showQuote(0);
+            animateBattlefield();
+        }
+
+        // Initialize forces
+        function initializeForces() {
+            // Clear existing forces
+            document.querySelectorAll('.force').forEach(f => f.remove());
+            
+            // Create player forces
+            for (let i = 0; i < 5; i++) {
+                createForce('ally', 
+                    window.innerWidth * 0.2 + Math.random() * 200,
+                    window.innerHeight * 0.3 + i * 80
+                );
+            }
+            
+            // Create enemy forces (hidden initially)
+            for (let i = 0; i < 7; i++) {
+                createForce('enemy',
+                    window.innerWidth * 0.7 + Math.random() * 200,
+                    window.innerHeight * 0.3 + i * 60,
+                    true // hidden
+                );
+            }
+        }
+
+        // Create a force unit
+        function createForce(type, x, y, hidden = false) {
+            const force = document.createElement('div');
+            force.className = `force ${type}`;
+            force.style.left = x + 'px';
+            force.style.top = y + 'px';
+            force.innerHTML = type === 'ally' ? '⚔' : '⚡';
+            
+            if (hidden) {
+                force.style.display = 'none';
+            }
+            
+            force.onclick = () => selectForce(force);
+            
+            document.getElementById('battlefield').appendChild(force);
+            
+            if (type === 'ally') {
+                gameState.playerForces.push(force);
+            } else {
+                gameState.enemyForces.push(force);
+            }
+            
+            return force;
+        }
+
+        // Show strategic quote
+        function showQuote(index) {
+            const text = document.getElementById('strategyText');
+            text.textContent = gameState.quotes[index];
+            text.classList.add('visible');
+            
+            setTimeout(() => {
+                text.classList.remove('visible');
+            }, 5000);
+        }
+
+        // Execute strategy
+        function executeStrategy(strategy) {
+            switch(strategy) {
+                case 'feign':
+                    feignWeakness();
+                    break;
+                case 'decoy':
+                    createDecoyForce();
+                    break;
+                case 'strike':
+                    strikeSwiftly();
+                    break;
+                case 'evade':
+                    evadeAndReposition();
+                    break;
+            }
+            
+            updateDeceptionLevel(20);
+            enemyTurn();
+            gameState.turn++;
+            
+            // Show next quote
+            gameState.currentQuote = (gameState.currentQuote + 1) % gameState.quotes.length;
+            showQuote(gameState.currentQuote);
+        }
+
+        // Strategy: Feign weakness
+        function feignWeakness() {
+            gameState.playerForces.forEach(force => {
+                force.style.opacity = '0.5';
+                force.style.transform = 'scale(0.8)';
+            });
+            
+            gameState.enemyConfused = true;
+            
+            // Enemy becomes overconfident
+            setTimeout(() => {
+                gameState.enemyForces.forEach(force => {
+                    force.style.display = 'block';
+                    moveForce(force, 
+                        parseFloat(force.style.left) - 100,
+                        parseFloat(force.style.top) + (Math.random() - 0.5) * 50
+                    );
+                });
+            }, 1000);
+        }
+
+        // Strategy: Create decoy
+        function createDecoyForce() {
+            const decoyX = window.innerWidth * 0.4 + Math.random() * 200;
+            const decoyY = window.innerHeight * 0.5 + Math.random() * 100;
+            
+            const decoy = createForce('ally', decoyX, decoyY);
+            decoy.classList.add('decoy');
+            gameState.decoys.push(decoy);
+            
+            // Create distraction particles
+            for (let i = 0; i < 20; i++) {
+                createParticle(decoyX, decoyY, '#d4af37');
+            }
+        }
+
+        // Strategy: Strike swiftly
+        function strikeSwiftly() {
+            const visibleEnemies = gameState.enemyForces.filter(e => e.style.display !== 'none');
+            
+            if (visibleEnemies.length > 0 && gameState.deceptionLevel > 50) {
+                // Successful strike
+                const target = visibleEnemies[0];
+                const striker = gameState.playerForces[0];
+                
+                moveForce(striker, 
+                    parseFloat(target.style.left),
+                    parseFloat(target.style.top)
+                );
+                
+                setTimeout(() => {
+                    createExplosion(parseFloat(target.style.left), parseFloat(target.style.top));
+                    target.remove();
+                    gameState.enemyForces = gameState.enemyForces.filter(e => e !== target);
+                    
+                    checkVictory();
+                }, 500);
+            }
+        }
+
+        // Strategy: Evade and reposition
+        function evadeAndReposition() {
+            gameState.playerForces.forEach((force, i) => {
+                const newX = Math.random() * window.innerWidth * 0.4;
+                const newY = window.innerHeight * 0.2 + i * 80;
+                moveForce(force, newX, newY);
+            });
+            
+            // Reset appearance
+            setTimeout(() => {
+                gameState.playerForces.forEach(force => {
+                    force.style.opacity = '1';
+                    force.style.transform = 'scale(1)';
+                });
+            }, 1000);
+        }
+
+        // Move force smoothly
+        function moveForce(force, x, y) {
+            force.classList.add('moving');
+            force.style.left = x + 'px';
+            force.style.top = y + 'px';
+            
+            setTimeout(() => {
+                force.classList.remove('moving');
+            }, 500);
+        }
+
+        // Enemy AI turn
+        function enemyTurn() {
+            if (gameState.enemyConfused) {
+                // Confused enemy makes poor decisions
+                gameState.enemyForces.forEach(force => {
+                    if (Math.random() > 0.5) {
+                        moveForce(force,
+                            parseFloat(force.style.left) + (Math.random() - 0.5) * 200,
+                            parseFloat(force.style.top) + (Math.random() - 0.5) * 100
+                        );
+                    }
+                });
+                gameState.enemyConfused = false;
+            } else {
+                // Smart enemy movement
+                const visibleAllies = gameState.playerForces.filter(f => f.style.display !== 'none');
+                if (visibleAllies.length > 0) {
+                    const target = visibleAllies[Math.floor(Math.random() * visibleAllies.length)];
+                    const attacker = gameState.enemyForces[Math.floor(Math.random() * gameState.enemyForces.length)];
+                    
+                    if (attacker && attacker.style.display !== 'none') {
+                        moveForce(attacker,
+                            parseFloat(target.style.left) + (Math.random() - 0.5) * 100,
+                            parseFloat(target.style.top) + (Math.random() - 0.5) * 100
+                        );
+                    }
+                }
+            }
+        }
+
+        // Update deception level
+        function updateDeceptionLevel(amount) {
+            gameState.deceptionLevel = Math.min(100, gameState.deceptionLevel + amount);
+            document.getElementById('deceptionFill').style.width = gameState.deceptionLevel + '%';
+        }
+
+        // Particle system
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 5;
+                this.vy = (Math.random() - 0.5) * 5;
+                this.color = color;
+                this.life = 1;
+                this.decay = 0.02;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+                this.vx *= 0.98;
+                this.vy *= 0.98;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function createParticle(x, y, color) {
+            particles.push(new Particle(x, y, color));
+        }
+
+        function createExplosion(x, y) {
+            for (let i = 0; i < 30; i++) {
+                createParticle(x, y, '#ff0000');
+            }
+        }
+
+        // Animate battlefield
+        function animateBattlefield() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw particles
+            particles = particles.filter(particle => {
+                particle.update();
+                particle.draw(ctx);
+                return particle.life > 0;
+            });
+            
+            // Draw strategic lines
+            ctx.strokeStyle = 'rgba(212, 175, 55, 0.1)';
+            ctx.lineWidth = 1;
+            
+            if (Math.random() < 0.02) {
+                ctx.beginPath();
+                ctx.moveTo(Math.random() * canvas.width, 0);
+                ctx.lineTo(Math.random() * canvas.width, canvas.height);
+                ctx.stroke();
+            }
+            
+            requestAnimationFrame(animateBattlefield);
+        }
+
+        // Check victory conditions
+        function checkVictory() {
+            if (gameState.enemyForces.length === 0) {
+                showOutcome('victory', 
+                    "Victory through deception! You have mastered the art of war. " +
+                    "Remember: The supreme excellence is not to win a hundred victories in a hundred battles, " +
+                    "but to subdue the enemy without fighting."
+                );
+            } else if (gameState.playerForces.length === 0) {
+                showOutcome('defeat',
+                    "Defeat teaches wisdom. In war, the way is to avoid what is strong and strike at what is weak. " +
+                    "Study the principles again."
+                );
+            }
+        }
+
+        // Show outcome
+        function showOutcome(type, message) {
+            const outcome = document.getElementById('outcome');
+            const title = document.getElementById('outcomeTitle');
+            const wisdom = document.getElementById('outcomeWisdom');
+            
+            title.textContent = type === 'victory' ? 'VICTORY' : 'DEFEAT';
+            title.className = `outcome-title ${type}`;
+            wisdom.textContent = message;
+            
+            outcome.classList.add('active');
+        }
+
+        // Restart
+        function restart() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
