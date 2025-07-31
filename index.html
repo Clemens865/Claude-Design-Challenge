@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Design Challenge - Interactive Poetry Gallery</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #f4f4f4;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 0;
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffd700, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #888;
+            font-weight: 300;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #ffd700, #ff6b6b, #4ecdc4);
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover::before {
+            transform: translateX(0);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .round-label {
+            display: inline-block;
+            background: #333;
+            color: #ffd700;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .round-label.final {
+            background: #ffd700;
+            color: #000;
+        }
+
+        .card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .author {
+            color: #888;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .description {
+            color: #ccc;
+            margin-bottom: 25px;
+            line-height: 1.8;
+        }
+
+        .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .keyword {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .view-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700, #ff6b6b);
+            color: #000;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .about {
+            background: #1a1a1a;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            border: 1px solid #333;
+        }
+
+        .about h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .about p {
+            color: #ccc;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+            border-top: 1px solid #333;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Claude Design Challenge</h1>
+            <p class="subtitle">An AI's creative journey through interactive poetry and literature</p>
+        </header>
+
+        <div class="about">
+            <h3>About This Collection</h3>
+            <p>This gallery showcases a series of interactive web experiences created by Claude (AI) in a design competition. The challenge was simple yet profound: give AI complete creative freedom to transform famous poems and literary texts into immersive digital art.</p>
+            <p>Each piece represents a different round of the competition, with increasingly complex requirements and creative evolution. The journey culminates in winning the final round with an interactive interpretation of Sun Tzu's "The Art of War".</p>
+        </div>
+
+        <div class="gallery">
+            <div class="card">
+                <span class="round-label">Round 1</span>
+                <h2>Invictus</h2>
+                <p class="author">by William Ernest Henley</p>
+                <p class="description">A dark, gothic experience exploring unconquerable spirit. Features dramatic scroll animations, particle effects, and a journey from darkness to golden defiance.</p>
+                <div class="keywords">
+                    <span class="keyword">Gothic</span>
+                    <span class="keyword">Scroll Animation</span>
+                    <span class="keyword">Particle Effects</span>
+                </div>
+                <a href="invictus.html" class="view-btn">Experience →</a>
+            </div>
+
+            <div class="card">
+                <span class="round-label">Round 2</span>
+                <h2>The Road Not Taken</h2>
+                <p class="author">by Robert Frost</p>
+                <p class="description">An interactive autumn forest where you literally choose your path. Features procedural tree generation, falling leaves, and a journey tracker.</p>
+                <div class="keywords">
+                    <span class="keyword">Interactive Choice</span>
+                    <span class="keyword">Autumn Forest</span>
+                    <span class="keyword">Canvas Animation</span>
+                </div>
+                <a href="road-not-taken.html" class="view-btn">Experience →</a>
+            </div>
+
+            <div class="card">
+                <span class="round-label">Semi-Final</span>
+                <h2>Hope is the thing with feathers</h2>
+                <p class="author">by Emily Dickinson</p>
+                <p class="description">An ethereal meditation on hope. Click to create music, draw constellations, and nurture hope through interaction. Features a storm mode showing hope's persistence.</p>
+                <div class="keywords">
+                    <span class="keyword">Watercolor Aesthetic</span>
+                    <span class="keyword">Musical Generation</span>
+                    <span class="keyword">Meditative</span>
+                </div>
+                <a href="hope-feathers.html" class="view-btn">Experience →</a>
+            </div>
+
+            <div class="card">
+                <span class="round-label">Semi-Final Revision</span>
+                <h2>Auguries of Innocence</h2>
+                <p class="author">by William Blake</p>
+                <p class="description">See infinity in a grain of sand. Features infinite zoom mechanics, moral choices with visual consequences, and quantum particle visualization.</p>
+                <div class="keywords">
+                    <span class="keyword">Infinite Zoom</span>
+                    <span class="keyword">Moral Choices</span>
+                    <span class="keyword">Particle Physics</span>
+                </div>
+                <a href="auguries-masterpiece.html" class="view-btn">Experience →</a>
+            </div>
+
+            <div class="card">
+                <span class="round-label final">Final - Winner 🏆</span>
+                <h2>The Art of War</h2>
+                <p class="author">by Sun Tzu</p>
+                <p class="description">Master the art of deception in this strategic battlefield simulation. Features fog of war, tactical decisions, and an AI opponent using Sun Tzu's principles.</p>
+                <div class="keywords">
+                    <span class="keyword">Strategy Game</span>
+                    <span class="keyword">Fog of War</span>
+                    <span class="keyword">AI Opponent</span>
+                </div>
+                <a href="art-of-war-final.html" class="view-btn">Experience →</a>
+            </div>
+        </div>
+
+        <footer>
+            <p>Created by Claude in collaboration with human creativity</p>
+            <p>Demonstrating the potential of AI as an artistic collaborator</p>
+        </footer>
+    </div>
+</body>
+</html>
